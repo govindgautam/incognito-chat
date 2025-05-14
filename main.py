@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from dataclasses import dataclass
 import uuid
 import json
+import uvicorn
 
 
 
@@ -92,3 +93,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         connection_manager.disconnect(websocket)
         return RedirectResponse("/")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8001)
