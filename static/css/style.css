@@ -1,0 +1,76 @@
+/* General Styling */
+body {
+  background-color: #f4f4f4;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+  max-width: 500px;
+  margin: 50px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Chat Box */
+#chat {
+  display: none;
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+/* Messages List */
+ul#messages {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li.clearfix::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+/* User Message Styling */
+.user-message {
+  background-color: #17A2B8;
+  color: #fff;
+  border-radius: 0.5em;
+  padding: 8px 12px;
+  margin: 5px 0;
+  max-width: 70%;
+  float: left;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+/* Other Message Styling */
+.other-message {
+  background-color: #007BFF;
+  color: #fff;
+  border-radius: 0.5em;
+  padding: 8px 12px;
+  margin: 5px 0;
+  max-width: 70%;
+  float: right;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+/* Input Section */
+#message-input {
+  margin-top: 10px;
+}
+
+/* Modal Input */
+#usernameInput {
+  text-align: center;
+}
