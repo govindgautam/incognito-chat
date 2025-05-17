@@ -6,8 +6,13 @@ from dataclasses import dataclass
 import uuid
 import json
 import uvicorn
+import os
+from dotenv import load_dotenv
 
+from database import database, messages  # PostgreSQL connection & table
 
+# Load environment variables
+load_dotenv()
 
 # Jinja2 templates directory setup
 templates = Jinja2Templates(directory="templates")
@@ -42,12 +47,19 @@ class ConnectionManager:
     async def broadcast(self, sender_ws: WebSocket, data: str):
         message_data = json.loads(data)
 
+        # ✅ Save message to PostgreSQL
+        await database.execute(messages.insert().values(
+            username=message_data["username"],
+            message=message_data["message"]
+        ))
+
+        # Broadcast to all connected clients
         for ws in self.active_connections.values():
             is_me = (ws == sender_ws)
             await ws.send_text(json.dumps({
                 "isMe": is_me,
-                "data": message_data['message'],
-                "username": message_data['username']
+                "data": message_data["message"],
+                "username": message_data["username"]
             }))
 
     def disconnect(self, websocket: WebSocket):
@@ -58,31 +70,23 @@ class ConnectionManager:
 # FastAPI app instance
 app = FastAPI()
 
-
-
-# Mounting static files (CSS, JS)
+# Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Connection manager instance
 connection_manager = ConnectionManager()
 
-
-
-# Root route: returns index.html
+# Home route
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
-
-# Join route: returns chat room page
+# Chat room route
 @app.get("/join", response_class=HTMLResponse)
 def join_room(request: Request):
     return templates.TemplateResponse("room.html", {"request": request})
 
-
-
-# WebSocket endpoint for real-time messaging
+# WebSocket route
 @app.websocket("/message")
 async def websocket_endpoint(websocket: WebSocket):
     await connection_manager.connect(websocket)
@@ -94,6 +98,17 @@ async def websocket_endpoint(websocket: WebSocket):
         connection_manager.disconnect(websocket)
         return RedirectResponse("/")
 
+# Connect to DB on startup
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
+# Disconnect from DB on shutdown
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+# Run server dynamically using OS env PORT or default 8001
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    port = int(os.environ.get("PORT", 8001))
+    uvicorn.run(app, host="0.0.0.0", port=port)
